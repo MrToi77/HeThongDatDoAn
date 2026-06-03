@@ -23,12 +23,12 @@ public class MonChinh extends MonAn {
 
         System.out.println(
                 "Mon Chinh" +
-                        "\nMa Mon: " + maMon +
-                        "\nTen Mon: " + tenMon +
-                        "\nGia Tien: " + giaTien +
+                        "\nMa Mon: " + getMaMon() +
+                        "\nTen Mon: " + getTenMon() +
+                        "\nGia Tien: " + getGiaTien() +
                         "\nLoai Mon: " + loaiMon +
                         "\nTrang Thai: " +
-                        (conHang ? "Con Hang" : "Het Hang")
+                        (isConHang() ? "Con Hang" : "Het Hang")
         );
 
         System.out.println("-------------------");

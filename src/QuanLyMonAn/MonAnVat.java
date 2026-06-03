@@ -23,14 +23,14 @@ public class MonAnVat extends MonAn {
 
         System.out.println(
                 "Mon An Vat" +
-                        "\nMa Mon: " + maMon +
-                        "\nTen Mon: " + tenMon +
-                        "\nGia Tien: " + giaTien +
+                        "\nMa Mon: " + getMaMon() +
+                        "\nTen Mon: " + getTenMon() +
+                        "\nGia Tien: " + getGiaTien() +
                         "\nKich Thuoc: " + kichThuoc +
                         "\nTrang Thai: " +
-                        (conHang ? "Con Hang" : "Het Hang")
+                        (isConHang() ? "Con Hang" : "Het Hang")
         );
 
-        System.out.println("---------------------");
+        System.out.println("-------------------");
     }
 }

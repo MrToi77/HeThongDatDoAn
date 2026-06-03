@@ -23,14 +23,14 @@ public class MonTrangMieng extends MonAn {
 
         System.out.println(
                 "Mon Trang Mieng" +
-                        "\nMa Mon: " + maMon +
-                        "\nTen Mon: " + tenMon +
-                        "\nGia Tien: " + giaTien +
+                        "\nMa Mon: " + getMaMon() +
+                        "\nTen Mon: " + getTenMon() +
+                        "\nGia Tien: " + getGiaTien() +
                         "\nHuong Vi: " + huongVi +
                         "\nTrang Thai: " +
-                        (conHang ? "Con Hang" : "Het Hang")
+                        (isConHang() ? "Con Hang" : "Het Hang")
         );
 
-        System.out.println("---------------------");
+        System.out.println("-------------------");
     }
 }

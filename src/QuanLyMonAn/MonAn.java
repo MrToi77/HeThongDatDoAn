@@ -2,10 +2,10 @@ package QuanLyMonAn;
 
 public abstract class MonAn {
 
-    protected String maMon;
-    protected String tenMon;
-    protected double giaTien;
-    protected boolean conHang;
+    private String maMon;
+    private String tenMon;
+    private double giaTien;
+    private boolean conHang;
 
     public MonAn(String maMon,
                  String tenMon,
