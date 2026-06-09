@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 // scanBasePackages giúp Spring tìm thấy các thư mục repository, service, api của bạn
 @SpringBootApplication(scanBasePackages = {"repository", "service", "api"})
 public class Main {
-
+    /* http://localhost:8080/api/v1/foods : link ds món ăn
+        http://localhost:8080/api/v1/students : link ds svien
+     */
     public static void main(String[] args) {
         /* Bây giờ Spring Boot sẽ tự động quản lý việc khởi tạo Repo và Service
            thông qua các nhãn @Repository và @Service bạn đã gắn,
