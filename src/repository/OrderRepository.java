@@ -1,5 +1,5 @@
 package repository;
-
+import org.springframework.stereotype.Repository;
 import model.Order;
 import model.OrderDetail;
 import utils.FileHelper;
@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
  * Lưu thông tin đơn hàng vào data/orders.csv
  * và chi tiết đơn vào data/order_details.csv
  */
-public class OrderRepository implements Repository<Order, String> {
+@Repository
+public class OrderRepository implements repository.Repository<Order, String> {
 
     private static final String ORDER_FILE        = "data/orders.csv";
     private static final String ORDER_DETAIL_FILE = "data/order_details.csv";

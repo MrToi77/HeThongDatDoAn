@@ -1,5 +1,5 @@
 package repository;
-
+import org.springframework.stereotype.Repository;
 import model.Student;
 import utils.FileHelper;
 
@@ -13,7 +13,8 @@ import java.util.Map;
  * Repository quản lý dữ liệu sinh viên.
  * Lưu/đọc từ file CSV: data/students.csv
  */
-public class StudentRepository implements Repository<Student, String> {
+@Repository
+public class StudentRepository implements repository.Repository<Student, String> {
 
     private static final String FILE_PATH = "data/students.csv";
 
