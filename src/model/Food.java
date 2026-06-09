@@ -1,5 +1,7 @@
 package model;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Lớp Food đại diện cho một món ăn trong hệ thống.
  */

@@ -3,12 +3,14 @@ package service;
 import model.Cart;
 import model.Order;
 import model.Student;
+import org.springframework.stereotype.Service;
 import repository.OrderRepository;
 import utils.OrderIdGenerator;
 
 /**
  * Service xử lý logic đặt hàng và thanh toán.
  */
+@Service
 public class OrderService {
 
     private final OrderRepository orderRepository;

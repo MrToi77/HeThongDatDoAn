@@ -1,6 +1,7 @@
 package service;
 
 import model.Student;
+import org.springframework.stereotype.Service;
 import repository.StudentRepository;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Service xử lý logic liên quan đến sinh viên.
  */
+@Service
 public class StudentService {
 
     private final StudentRepository studentRepository;
