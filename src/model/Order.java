@@ -69,6 +69,14 @@ public class Order {
         return totalAmount;
     }
 
+    /**
+     * Dùng khi tái tạo Order từ file CSV (totalAmount đã được lưu sẵn).
+     * Không dùng trong luồng đặt hàng bình thường.
+     */
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public LocalDateTime getOrderTime() {
         return orderTime;
     }

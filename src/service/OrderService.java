@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import repository.OrderRepository;
 import utils.OrderIdGenerator;
 
+import java.util.List;
+
 /**
  * Service xử lý logic đặt hàng và thanh toán.
  */
@@ -97,5 +99,28 @@ public class OrderService {
      */
     public Order findOrderById(String orderId) {
         return orderRepository.findById(orderId);
+    }
+
+    /**
+     * Lưu trực tiếp đơn hàng (dùng khi cập nhật trạng thái thanh toán).
+     */
+    public void saveOrder(Order order) {
+        orderRepository.save(order);
+    }
+
+    /**
+     * Lấy tất cả đơn hàng trong hệ thống.
+     */
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    /**
+     * Lấy danh sách đơn hàng của một sinh viên.
+     *
+     * @param studentId Mã sinh viên
+     */
+    public List<Order> getOrdersByStudentId(String studentId) {
+        return orderRepository.findByStudentId(studentId);
     }
 }

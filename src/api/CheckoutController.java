@@ -4,6 +4,7 @@ import api.dto.CheckoutRequest;
 import model.Cart;
 import model.Order;
 import model.Student;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.*;
 
@@ -15,7 +16,6 @@ public class CheckoutController {
     private final CartService cartService;
     private final StudentService studentService;
 
-    // Inject sẵn các phương thức thanh toán của bạn vào đây
     private final CashPayment cashPayment;
     private final WalletPayment walletPayment;
     private final BankTransferPayment bankTransferPayment;
@@ -33,42 +33,44 @@ public class CheckoutController {
 
     // API: Thanh toán giỏ hàng
     @PostMapping("/{studentId}")
-    public Object processCheckout(@PathVariable String studentId, @RequestBody CheckoutRequest request) {
+    public ResponseEntity<?> processCheckout(@PathVariable String studentId,
+                                             @RequestBody CheckoutRequest request) {
         try {
             Student student = studentService.findById(studentId);
-            if (student == null) return "Lỗi: Không tìm thấy sinh viên!";
+            if (student == null) {
+                return ResponseEntity.badRequest().body("Lỗi: Không tìm thấy sinh viên!");
+            }
 
             Cart cart = cartService.getCartByStudentId(studentId);
-            if (cart.isEmpty()) return "Lỗi: Giỏ hàng trống!";
+            if (cart.isEmpty()) {
+                return ResponseEntity.badRequest().body("Lỗi: Giỏ hàng trống!");
+            }
 
-            // 1. Tạo đơn hàng (Trạng thái PENDING)
-            Order order = orderService.createOrder(student, cart);
-
-            // 2. Chọn phương thức thanh toán dựa trên chữ Client gửi lên
             PaymentMethod method = selectPaymentMethod(request.getPaymentMethod());
-            if (method == null) return "Lỗi: Phương thức thanh toán không hợp lệ!";
+            if (method == null) {
+                return ResponseEntity.badRequest().body("Lỗi: Phương thức thanh toán không hợp lệ! Dùng: CASH, WALLET, BANK");
+            }
 
-            // 3. Thực hiện thanh toán (Dùng code đa hình siêu xịn của bạn)
+            Order order = orderService.createOrder(student, cart);
             boolean success = orderService.processPayment(order, student, method, cart);
 
             if (success) {
-                return order; // Trả về thông tin hóa đơn nếu thành công
+                return ResponseEntity.ok(order);
             } else {
-                return "Thanh toán thất bại (Có thể do không đủ số dư ví).";
+                return ResponseEntity.badRequest().body("Thanh toán thất bại: Số dư ví không đủ.");
             }
         } catch (Exception e) {
-            return "Lỗi hệ thống: " + e.getMessage();
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 
-    // Hàm phụ trợ: Chuyển chuỗi Text thành Class tương ứng
     private PaymentMethod selectPaymentMethod(String type) {
         if (type == null) return null;
         switch (type.toUpperCase()) {
-            case "CASH": return cashPayment;
+            case "CASH":   return cashPayment;
             case "WALLET": return walletPayment;
-            case "BANK": return bankTransferPayment;
-            default: return null;
+            case "BANK":   return bankTransferPayment;
+            default:       return null;
         }
     }
 }

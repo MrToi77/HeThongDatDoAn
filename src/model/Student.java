@@ -1,63 +1,65 @@
 package model;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Lớp Student kế thừa từ User.
- * Đại diện cho sinh viên trong ký túc xá với số dư tài khoản và địa chỉ phòng.
  */
 public class Student extends User {
 
-    private String roomAddress;   // Địa chỉ phòng ký túc xá
-    private double accountBalance; // Số dư tài khoản
+    private static final DateTimeFormatter FMT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+    private String roomAddress;
+    private double accountBalance;
+    private String password;
+    private String activeTime; // Thời gian hoạt động gần nhất
 
     public Student(String studentId, String fullName, String phoneNumber,
-                   String roomAddress, double accountBalance) {
+                   String roomAddress, double accountBalance, String password) {
         super(studentId, fullName, phoneNumber);
-        this.roomAddress = roomAddress;
+        this.roomAddress    = roomAddress;
         this.accountBalance = accountBalance;
+        this.password       = password;
+        this.activeTime     = LocalDateTime.now().format(FMT);
+    }
+
+    // Constructor tương thích ngược (không có password) — dùng cho dữ liệu mẫu cũ
+    public Student(String studentId, String fullName, String phoneNumber,
+                   String roomAddress, double accountBalance) {
+        this(studentId, fullName, phoneNumber, roomAddress, accountBalance, "123456");
     }
 
     // ==================== Getters & Setters ====================
 
-    public String getRoomAddress() {
-        return roomAddress;
+    public String getRoomAddress()  { return roomAddress; }
+    public void setRoomAddress(String roomAddress) { this.roomAddress = roomAddress; }
+
+    public double getAccountBalance() { return accountBalance; }
+    public void setAccountBalance(double accountBalance) { this.accountBalance = accountBalance; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getActiveTime() { return activeTime; }
+    public void setActiveTime(String activeTime) { this.activeTime = activeTime; }
+
+    /** Cập nhật thời gian hoạt động về thời điểm hiện tại */
+    public void updateActiveTime() {
+        this.activeTime = LocalDateTime.now().format(FMT);
     }
 
-    public void setRoomAddress(String roomAddress) {
-        this.roomAddress = roomAddress;
-    }
-
-    public double getAccountBalance() {
-        return accountBalance;
-    }
-
-    public void setAccountBalance(double accountBalance) {
-        this.accountBalance = accountBalance;
-    }
-
-    /**
-     * Trừ tiền khỏi tài khoản sau khi thanh toán thành công.
-     *
-     * @param amount Số tiền cần trừ
-     * @throws IllegalArgumentException nếu số dư không đủ
-     */
     public void deductBalance(double amount) {
         if (amount > accountBalance) {
             throw new IllegalArgumentException(
-                    "Số dư không đủ! Số dư hiện tại: " + accountBalance + " VND, cần: " + amount + " VND."
-            );
+                "Số dư không đủ! Hiện tại: " + accountBalance + " VND, cần: " + amount + " VND.");
         }
         this.accountBalance -= amount;
     }
 
-    /**
-     * Nạp tiền vào tài khoản.
-     *
-     * @param amount Số tiền nạp thêm (phải > 0)
-     */
     public void topUpBalance(double amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Số tiền nạp phải lớn hơn 0.");
-        }
+        if (amount <= 0) throw new IllegalArgumentException("Số tiền nạp phải lớn hơn 0.");
         this.accountBalance += amount;
     }
 
@@ -69,12 +71,16 @@ public class Student extends User {
         System.out.println("SĐT        : " + getPhoneNumber());
         System.out.println("Phòng KTX  : " + roomAddress);
         System.out.printf("Số dư TK   : %.0f VND%n", accountBalance);
+        System.out.println("Hoạt động  : " + activeTime);
         System.out.println("================================");
     }
 
     @Override
     public String toString() {
+        // id,fullName,phone,room,balance,password,activeTime
         return getId() + "," + getFullName() + "," + getPhoneNumber() + ","
-                + roomAddress + "," + accountBalance;
+                + roomAddress + "," + accountBalance + ","
+                + (password != null ? password : "") + ","
+                + (activeTime != null ? activeTime : "");
     }
 }

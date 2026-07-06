@@ -1,24 +1,37 @@
 package api;
 
 import model.Student;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repository.StudentRepository;
+import service.StudentService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/students") // Đây chính là "địa chỉ phòng" mà Server đang tìm kiếm
+@RequestMapping("/api/v1/students")
 public class StudentController {
 
-    private final StudentRepository studentRepository;
+    private final StudentService studentService;
 
-    public StudentController(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
     // API: Lấy danh sách toàn bộ sinh viên
     @GetMapping
     public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+        return studentService.getAllStudents();
+    }
+
+    // API: Tạo sinh viên mới
+    // POST http://localhost:8080/api/v1/students
+    @PostMapping
+    public ResponseEntity<?> createStudent(@RequestBody Student student) {
+        try {
+            studentService.registerStudent(student); // tự validate trùng ID bên trong
+            return ResponseEntity.ok(student);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

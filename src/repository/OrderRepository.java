@@ -102,6 +102,7 @@ public class OrderRepository implements repository.Repository<Order, String> {
                     Order order = new Order(orderId, studentId, new ArrayList<>());
                     order.setStatus(status);
                     order.setPaymentMethod(payMethod);
+                    order.setTotalAmount(total); // khôi phục tổng tiền từ file
 
                     // Gắn details từ file detail
                     List<OrderDetail> details = detailsMap.getOrDefault(orderId, new ArrayList<>());

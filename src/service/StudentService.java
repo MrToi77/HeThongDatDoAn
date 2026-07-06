@@ -49,6 +49,26 @@ public class StudentService {
     }
 
     /**
+     * Cập nhật thông tin sinh viên.
+     */
+    public void updateStudent(Student student) {
+        if (studentRepository.findById(student.getId()) == null) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên: " + student.getId());
+        }
+        studentRepository.save(student);
+    }
+
+    /**
+     * Xóa sinh viên theo mã.
+     */
+    public void deleteStudent(String studentId) {
+        if (studentRepository.findById(studentId) == null) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên: " + studentId);
+        }
+        studentRepository.deleteById(studentId);
+    }
+
+    /**
      * Nạp tiền vào tài khoản sinh viên.
      *
      * @param studentId Mã sinh viên
