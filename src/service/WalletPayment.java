@@ -2,11 +2,13 @@ package service;
 
 import model.Order;
 import model.Student;
+import org.springframework.stereotype.Component;
 
 /**
  * Thanh toán bằng ví sinh viên (số dư tài khoản).
  * Tự động trừ tiền từ tài khoản nếu số dư đủ.
  */
+@Component
 public class WalletPayment implements PaymentMethod {
 
     @Override

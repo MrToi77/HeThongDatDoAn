@@ -2,11 +2,13 @@ package service;
 
 import model.Order;
 import model.Student;
+import org.springframework.stereotype.Component;
 
 /**
  * Thanh toán bằng tiền mặt.
  * Không cần kiểm tra số dư tài khoản, xác nhận thanh toán ngay.
  */
+@Component
 public class CashPayment implements PaymentMethod {
 
     @Override

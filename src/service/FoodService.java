@@ -1,6 +1,7 @@
 package service;
 
 import model.Food;
+import org.springframework.stereotype.Service;
 import repository.FoodRepository;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 /**
  * Service xử lý logic nghiệp vụ liên quan đến món ăn.
  */
+@Service
 public class FoodService {
 
     private final FoodRepository foodRepository;

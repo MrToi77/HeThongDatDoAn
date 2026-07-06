@@ -1,5 +1,5 @@
 package repository;
-
+import org.springframework.stereotype.Repository;
 import model.Food;
 import utils.FileHelper;
 
@@ -13,7 +13,9 @@ import java.util.Map;
  * Repository quản lý dữ liệu món ăn.
  * Lưu/đọc từ file CSV: data/foods.csv
  */
-public class FoodRepository implements Repository<Food, String> {
+@Repository
+public class FoodRepository implements repository.Repository<Food, String> {
+    /**repo.Repo để cho khong bị nhầm @Repository của Spring */
 
     private static final String FILE_PATH = "data/foods.csv";
 

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hệ Thống Đặt Đồ Ăn KTX</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333}
+    /* ===== AUTH ===== */
+    #auth-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#e74c3c,#c0392b)}
+    .auth-box{background:#fff;border-radius:12px;padding:36px;width:420px;box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+    .auth-box h1{text-align:center;color:#e74c3c;margin-bottom:8px;font-size:22px}
+    .auth-box p.sub{text-align:center;color:#888;margin-bottom:24px;font-size:13px}
+    .tab-btns{display:flex;gap:0;margin-bottom:20px;border:1px solid #e74c3c;border-radius:6px;overflow:hidden}
+    .tab-btns button{flex:1;padding:10px;border:none;cursor:pointer;font-size:14px;background:#fff;color:#e74c3c}
+    .tab-btns button.active{background:#e74c3c;color:#fff}
+    .role-btns{display:flex;gap:8px;margin-bottom:16px}
+    .role-btn{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px;cursor:pointer;font-size:13px;background:#fff;text-align:center}
+    .role-btn.active{border-color:#e74c3c;background:#fef5f5;color:#e74c3c;font-weight:bold}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:13px;margin-bottom:4px;color:#555}
+    .form-group input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+    .form-group input:focus{outline:none;border-color:#e74c3c}
+    .btn-full{width:100%;padding:12px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:15px;font-weight:bold;margin-top:4px}
+    .btn-full:hover{background:#c0392b}
+    /* ===== MAIN APP ===== */
+    #app-page{display:none}
+    header{background:#e74c3c;color:#fff;padding:12px 28px;display:flex;align-items:center;justify-content:space-between}
+    header .title{font-size:18px;font-weight:bold}
+    header .user-info{font-size:13px;display:flex;align-items:center;gap:12px}
+    header .logout{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+    nav{display:flex;gap:6px;background:#fff;padding:10px 28px;border-bottom:2px solid #eee;flex-wrap:wrap}
+    nav button{padding:7px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;background:#eee}
+    nav button.active{background:#e74c3c;color:#fff}
+    .container{max-width:1000px;margin:20px auto;padding:0 16px}
+    .section{display:none}.section.active{display:block}
+    h2{margin-bottom:14px;color:#e74c3c;font-size:17px}
+    .card{background:#fff;border-radius:8px;padding:18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,0.09)}
+    .form-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .form-row input,.form-row select{flex:1;min-width:140px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+    .btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:13px;color:#fff;background:#e74c3c}
+    .btn:hover{background:#c0392b}
+    .btn.green{background:#27ae60}.btn.green:hover{background:#219a52}
+    .btn.blue{background:#2980b9}.btn.blue:hover{background:#2471a3}
+    .btn.orange{background:#e67e22}.btn.orange:hover{background:#ca6f1e}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:#e74c3c;color:#fff;padding:9px 10px;text-align:left}
+    td{padding:8px 10px;border-bottom:1px solid #eee}
+    tr:hover td{background:#fef9f9}
+    .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold}
+    .badge.green{background:#d5f5e3;color:#27ae60}
+    .badge.red{background:#fdecea;color:#e74c3c}
+    .badge.yellow{background:#fef9e7;color:#f39c12}
+    #toast{position:fixed;bottom:20px;right:20px;background:#2ecc71;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;display:none;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+    #toast.error{background:#e74c3c}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
+    .modal-bg.open{display:flex}
+    .modal{background:#fff;border-radius:10px;padding:28px;width:420px;max-width:95vw}
+    .modal h3{margin-bottom:16px;color:#e74c3c}
+    .modal .form-group{margin-bottom:12px}
+    .modal-btns{display:flex;gap:8px;margin-top:16px}
+  </style>
+</head>
+<body>
+
+<!-- ===== TRANG ĐĂNG NHẬP / ĐĂNG KÝ ===== -->
+<div id="auth-page">
+  <div class="auth-box">
+    <h1>🍱 Đặt Đồ Ăn KTX</h1>
+    <p class="sub">Hệ thống đặt đồ ăn ký túc xá</p>
+    <div class="tab-btns">
+      <button class="active" onclick="switchAuthTab('login')">Đăng nhập</button>
+      <button onclick="switchAuthTab('register')">Đăng ký</button>
+    </div>
+
+    <!-- ĐĂNG NHẬP -->
+    <div id="login-form">
+      <div class="role-btns">
+        <div class="role-btn active" onclick="selectRole('login','student',this)">🎓 Sinh viên</div>
+        <div class="role-btn" onclick="selectRole('login','admin',this)">👑 Admin</div>
+      </div>
+      <div class="form-group"><label>Số điện thoại</label><input id="li-phone" placeholder="VD: 0901234567"/></div>
+      <div class="form-group"><label>Mật khẩu</label><input id="li-pass" type="password" placeholder="Mật khẩu"/></div>
+      <button class="btn-full" onclick="doLogin()">Đăng nhập</button>
+      <p style="text-align:center;margin-top:14px;font-size:13px;color:#888">
+        Admin mặc định: <b>0000000000</b> / <b>admin123</b>
+      </p>
+    </div>
+
+    <!-- ĐĂNG KÝ -->
+    <div id="register-form" style="display:none">
+      <div class="role-btns">
+        <div class="role-btn active" onclick="selectRole('register','student',this)">🎓 Sinh viên</div>
+        <div class="role-btn" onclick="selectRole('register','admin',this)">👑 Admin</div>
+      </div>
+      <!-- Sinh viên -->
+      <div id="reg-student-fields">
+        <div class="form-group"><label>Mã sinh viên</label><input id="rs-id" placeholder="VD: SV004"/></div>
+        <div class="form-group"><label>Họ và tên</label><input id="rs-name" placeholder="Nguyễn Văn A"/></div>
+        <div class="form-group"><label>Số điện thoại</label><input id="rs-phone" placeholder="0901234567"/></div>
+        <div class="form-group"><label>Phòng KTX</label><input id="rs-room" placeholder="A1-101"/></div>
+        <div class="form-group"><label>Số dư ban đầu (VND)</label><input id="rs-balance" type="number" placeholder="100000"/></div>
+        <div class="form-group"><label>Mật khẩu</label><input id="rs-pass" type="password" placeholder="Đặt mật khẩu"/></div>
+      </div>
+      <!-- Admin -->
+      <div id="reg-admin-fields" style="display:none">
+        <div class="form-group"><label>Số điện thoại</label><input id="ra-phone" placeholder="0901234567"/></div>
+        <div class="form-group"><label>Mật khẩu</label><input id="ra-pass" type="password" placeholder="Đặt mật khẩu"/></div>
+      </div>
+      <button class="btn-full" onclick="doRegister()">Đăng ký</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRANG CHÍNH ===== -->
+<div id="app-page">
+  <header>
+    <div class="title">🍱 Hệ Thống Đặt Đồ Ăn KTX</div>
+    <div class="user-info">
+      <span id="header-user"></span>
+      <button class="logout" onclick="logout()">Đăng xuất</button>
+    </div>
+  </header>
+  <nav id="main-nav"></nav>
+  <div class="container" id="main-content"></div>
+</div>
+
+<!-- Modal sửa món ăn -->
+<div class="modal-bg" id="modal-food">
+  <div class="modal">
+    <h3>Chỉnh sửa món ăn</h3>
+    <input type="hidden" id="edit-food-id"/>
+    <div class="form-group"><label>Tên món</label><input id="edit-food-name"/></div>
+    <div class="form-group"><label>Giá (VND)</label><input id="edit-food-price" type="number"/></div>
+    <div class="form-group"><label>Loại</label><input id="edit-food-cat"/></div>
+    <div class="form-group"><label>Trạng thái</label>
+      <select id="edit-food-avail"><option value="true">Còn hàng</option><option value="false">Hết hàng</option></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn green" onclick="saveFoodEdit()">Lưu</button>
+      <button class="btn" style="background:#aaa" onclick="closeModal('modal-food')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal sửa sinh viên -->
+<div class="modal-bg" id="modal-student">
+  <div class="modal">
+    <h3>Chỉnh sửa sinh viên</h3>
+    <input type="hidden" id="edit-sv-id"/>
+    <div class="form-group"><label>Họ tên</label><input id="edit-sv-name"/></div>
+    <div class="form-group"><label>SĐT</label><input id="edit-sv-phone"/></div>
+    <div class="form-group"><label>Phòng KTX</label><input id="edit-sv-room"/></div>
+    <div class="form-group"><label>Số dư (VND)</label><input id="edit-sv-balance" type="number"/></div>
+    <div class="modal-btns">
+      <button class="btn green" onclick="saveStudentEdit()">Lưu</button>
+      <button class="btn" style="background:#aaa" onclick="closeModal('modal-student')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE = 'http://localhost:8080/api';
+let currentUser = null; // {role, id, fullName, phone, ...}
+let loginRole = 'student', registerRole = 'student';
+
+// ===== AUTH HELPERS =====
+function switchAuthTab(tab) {
+  document.getElementById('login-form').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btns button').forEach((b,i)=>b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+}
+function selectRole(form, role, el) {
+  el.closest('.role-btns').querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if(form==='login') loginRole=role;
+  else {
+    registerRole=role;
+    document.getElementById('reg-student-fields').style.display = role==='student' ? 'block' : 'none';
+    document.getElementById('reg-admin-fields').style.display   = role==='admin'   ? 'block' : 'none';
+  }
+}
+async function doLogin() {
+  const phone = document.getElementById('li-phone').value.trim();
+  const pass  = document.getElementById('li-pass').value;
+  if(!phone||!pass){toast('Vui lòng nhập đầy đủ!',true);return;}
+  const res = await fetch(BASE+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({role:loginRole,phone,password:pass})});
+  const data = await res.json();
+  if(res.ok){ currentUser=data; showApp(); }
+  else toast(data.error||'Lỗi!',true);
+}
+async function doRegister() {
+  let body;
+  if(registerRole==='student'){
+    body={role:'student',
+      studentId:document.getElementById('rs-id').value.trim(),
+      fullName:document.getElementById('rs-name').value.trim(),
+      phone:document.getElementById('rs-phone').value.trim(),
+      room:document.getElementById('rs-room').value.trim(),
+      balance:document.getElementById('rs-balance').value||'0',
+      password:document.getElementById('rs-pass').value};
+    if(!body.studentId||!body.fullName||!body.phone||!body.room||!body.password){toast('Điền đầy đủ thông tin!',true);return;}
+  } else {
+    body={role:'admin',
+      phone:document.getElementById('ra-phone').value.trim(),
+      password:document.getElementById('ra-pass').value};
+    if(!body.phone||!body.password){toast('Điền đầy đủ thông tin!',true);return;}
+  }
+  const res = await fetch(BASE+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data = await res.json();
+  if(res.ok){toast('Đăng ký thành công! Hãy đăng nhập.');switchAuthTab('login');}
+  else toast(data.error||'Lỗi!',true);
+}
+function logout(){currentUser=null;document.getElementById('auth-page').style.display='flex';document.getElementById('app-page').style.display='none';}
+
+// ===== SHOW APP =====
+function showApp(){
+  document.getElementById('auth-page').style.display='none';
+  document.getElementById('app-page').style.display='block';
+  document.getElementById('header-user').textContent = currentUser.role==='admin'
+    ? '👑 Admin | '+currentUser.phone : '🎓 '+currentUser.fullName;
+  renderNav();
+}
+function renderNav(){
+  const nav = document.getElementById('main-nav');
+  if(currentUser.role==='admin'){
+    nav.innerHTML=`
+      <button class="active" onclick="showTab('a-foods',this)">🥘 Món Ăn</button>
+      <button onclick="showTab('a-students',this)">🎓 Sinh Viên</button>
+      <button onclick="showTab('a-carts',this)">🛒 Giỏ Hàng</button>
+      <button onclick="showTab('a-orders',this)">📦 Đơn Hàng</button>`;
+    renderAdmin();
+    showTab('a-foods',nav.firstElementChild);
+  } else {
+    nav.innerHTML=`
+      <button class="active" onclick="showTab('s-foods',this)">🥘 Thực Đơn</button>
+      <button onclick="showTab('s-cart',this)">🛒 Giỏ Hàng</button>
+      <button onclick="showTab('s-account',this)">👤 Tài Khoản</button>
+      <button onclick="showTab('s-orders',this)">📦 Đơn Hàng</button>`;
+    renderStudent();
+    showTab('s-foods',nav.firstElementChild);
+  }
+}
+function showTab(id,btn){
+  document.querySelectorAll('#main-content .section').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn){document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  if(id==='a-foods') loadAdminFoods();
+  if(id==='a-students') loadAdminStudents();
+  if(id==='a-orders') loadAdminOrders();
+  if(id==='s-foods') loadMenuFoods();
+  if(id==='s-cart') loadMyCart();
+  if(id==='s-orders') loadMyOrders();
+  if(id==='s-account') renderAccountInfo();
+}
+</script>
+
+<script>
+// ===== ADMIN UI =====
+function renderAdmin(){
+  document.getElementById('main-content').innerHTML=`
+  <div id="a-foods" class="section">
+    <div class="card"><h2>Thêm Món Ăn</h2>
+      <div class="form-row">
+        <input id="af-id" placeholder="Mã món (F010)"/>
+        <input id="af-name" placeholder="Tên món"/>
+        <input id="af-price" placeholder="Giá" type="number"/>
+        <input id="af-cat" placeholder="Loại (Cơm, Bún...)"/>
+        <select id="af-avail"><option value="true">Còn hàng</option><option value="false">Hết hàng</option></select>
+      </div>
+      <button class="btn green" onclick="adminAddFood()">+ Thêm món</button>
+    </div>
+    <div class="card"><h2>Danh Sách Món Ăn <button class="btn blue" style="float:right;font-size:12px" onclick="loadAdminFoods()">↻</button></h2>
+      <table><thead><tr><th>Mã</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Trạng thái</th><th>Sửa</th><th>Xóa</th></tr></thead>
+      <tbody id="admin-foods-table"></tbody></table>
+    </div>
+  </div>
+  <div id="a-students" class="section">
+    <div class="card"><h2>Danh Sách Sinh Viên <button class="btn blue" style="float:right;font-size:12px" onclick="loadAdminStudents()">↻</button></h2>
+      <table><thead><tr><th>Mã</th><th>Họ tên</th><th>SĐT</th><th>Phòng</th><th>Số dư</th><th>Hoạt động</th><th>Sửa</th><th>Xóa</th></tr></thead>
+      <tbody id="admin-students-table"></tbody></table>
+    </div>
+  </div>
+  <div id="a-carts" class="section">
+    <div class="card"><h2>Xem Giỏ Hàng Sinh Viên</h2>
+      <div class="form-row">
+        <input id="ac-svid" placeholder="Mã sinh viên"/>
+        <button class="btn blue" onclick="adminViewCart()">Xem</button>
+      </div>
+      <table><thead><tr><th>Tên món</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+      <tbody id="admin-cart-table"></tbody></table>
+      <div id="admin-cart-total" style="text-align:right;margin-top:8px;font-weight:bold;color:#e74c3c"></div>
+    </div>
+  </div>
+  <div id="a-orders" class="section">
+    <div class="card"><h2>Đơn Hàng</h2>
+      <div class="form-row">
+        <input id="ao-svid" placeholder="Mã SV (để trống = tất cả)"/>
+        <button class="btn blue" onclick="loadAdminOrders()">🔍 Tìm</button>
+      </div>
+      <table><thead><tr><th>Mã đơn</th><th>Sinh viên</th><th>Thời gian</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th></tr></thead>
+      <tbody id="admin-orders-table"></tbody></table>
+    </div>
+  </div>`;
+}
+
+async function loadAdminFoods(){
+  const data=await(await fetch(BASE+'/foods')).json();
+  document.getElementById('admin-foods-table').innerHTML=data.map(f=>`
+    <tr>
+      <td>${f.foodId}</td><td>${f.name}</td><td>${fmt(f.price)}</td><td>${f.category}</td>
+      <td><span class="badge ${f.available?'green':'red'}">${f.available?'Còn':'Hết'}</span></td>
+      <td><button class="btn orange" style="padding:3px 10px;font-size:12px" onclick='openFoodEdit(${JSON.stringify(f)})'>Sửa</button></td>
+      <td><button class="btn" style="padding:3px 10px;font-size:12px" onclick="adminDeleteFood('${f.foodId}')">Xóa</button></td>
+    </tr>`).join('');
+}
+async function adminAddFood(){
+  const body={id:v('af-id'),name:v('af-name'),price:v('af-price'),category:v('af-cat'),available:v('af-avail')};
+  if(!body.id||!body.name||!body.price){toast('Điền đầy đủ!',true);return;}
+  const res=await post(BASE+'/foods',body);
+  if(res.ok){toast('Đã thêm món!');loadAdminFoods();}else toast((await res.json()).error||'Lỗi!',true);
+}
+async function adminDeleteFood(id){
+  if(!confirm('Xóa món '+id+'?'))return;
+  const res=await fetch(BASE+'/foods?id='+id,{method:'DELETE'});
+  if(res.ok){toast('Đã xóa!');loadAdminFoods();}
+}
+function openFoodEdit(f){
+  document.getElementById('edit-food-id').value=f.foodId;
+  document.getElementById('edit-food-name').value=f.name;
+  document.getElementById('edit-food-price').value=f.price;
+  document.getElementById('edit-food-cat').value=f.category;
+  document.getElementById('edit-food-avail').value=String(f.available);
+  document.getElementById('modal-food').classList.add('open');
+}
+async function saveFoodEdit(){
+  const id=document.getElementById('edit-food-id').value;
+  const body={id,name:document.getElementById('edit-food-name').value,
+    price:document.getElementById('edit-food-price').value,
+    category:document.getElementById('edit-food-cat').value,
+    available:document.getElementById('edit-food-avail').value};
+  const res=await post(BASE+'/foods',body);
+  if(res.ok){toast('Đã cập nhật!');closeModal('modal-food');loadAdminFoods();}
+  else toast((await res.json()).error||'Lỗi!',true);
+}
+
+async function loadAdminStudents(){
+  const data=await(await fetch(BASE+'/students')).json();
+  document.getElementById('admin-students-table').innerHTML=data.map(s=>`
+    <tr>
+      <td>${s.id}</td><td>${s.fullName}</td><td>${s.phoneNumber}</td>
+      <td>${s.roomAddress}</td><td>${fmt(s.accountBalance)}</td>
+      <td style="font-size:11px;color:#888">${s.activeTime||'—'}</td>
+      <td><button class="btn orange" style="padding:3px 10px;font-size:12px" onclick='openStudentEdit(${JSON.stringify(s)})'>Sửa</button></td>
+      <td><button class="btn" style="padding:3px 10px;font-size:12px" onclick="adminDeleteStudent('${s.id}')">Xóa</button></td>
+    </tr>`).join('');
+}
+function openStudentEdit(s){
+  document.getElementById('edit-sv-id').value=s.id;
+  document.getElementById('edit-sv-name').value=s.fullName;
+  document.getElementById('edit-sv-phone').value=s.phoneNumber;
+  document.getElementById('edit-sv-room').value=s.roomAddress;
+  document.getElementById('edit-sv-balance').value=s.accountBalance;
+  document.getElementById('modal-student').classList.add('open');
+}
+async function saveStudentEdit(){
+  const id=document.getElementById('edit-sv-id').value;
+  const body={studentId:id,fullName:document.getElementById('edit-sv-name').value,
+    phoneNumber:document.getElementById('edit-sv-phone').value,
+    roomAddress:document.getElementById('edit-sv-room').value,
+    accountBalance:document.getElementById('edit-sv-balance').value};
+  const res=await fetch(BASE+'/students/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){toast('Đã cập nhật!');closeModal('modal-student');loadAdminStudents();}
+  else toast((await res.json()).error||'Lỗi!',true);
+}
+async function adminDeleteStudent(id){
+  if(!confirm('Xóa sinh viên '+id+'?'))return;
+  const res=await fetch(BASE+'/students/'+id,{method:'DELETE'});
+  if(res.ok){toast('Đã xóa!');loadAdminStudents();}
+  else toast('Lỗi!',true);
+}
+async function adminViewCart(){
+  const svid=v('ac-svid');if(!svid){toast('Nhập mã SV!',true);return;}
+  const data=await(await fetch(BASE+'/carts/'+svid)).json();
+  const items=data.items||[];
+  document.getElementById('admin-cart-table').innerHTML=items.map(i=>`
+    <tr><td>${i.food.name}</td><td>${fmt(i.food.price)}</td><td>${i.quantity}</td><td>${fmt(i.subtotal)}</td></tr>`).join('');
+  document.getElementById('admin-cart-total').textContent=items.length?'Tổng: '+fmt(items.reduce((s,i)=>s+i.subtotal,0)):'Giỏ trống';
+}
+async function loadAdminOrders(){
+  const svid=v('ao-svid');
+  const url=svid?BASE+'/orders?studentId='+svid:BASE+'/orders';
+  const data=await(await fetch(url)).json();
+  data.sort((a,b)=>a.orderTime>b.orderTime?1:-1);
+  document.getElementById('admin-orders-table').innerHTML=data.map(o=>`
+    <tr>
+      <td>${o.orderId}</td><td>${o.studentId}</td><td style="font-size:11px">${o.orderTime}</td>
+      <td>${fmt(o.totalAmount)}</td><td>${o.paymentMethod||'—'}</td>
+      <td><span class="badge ${o.status==='PAID'?'green':o.status==='CANCELLED'?'red':'yellow'}">${o.status}</span></td>
+    </tr>`).join('');
+}
+</script>
+
+<script>
+// ===== STUDENT UI =====
+function renderStudent(){
+  document.getElementById('main-content').innerHTML=`
+  <div id="s-foods" class="section">
+    <div class="card"><h2>Thực Đơn Hôm Nay <button class="btn blue" style="float:right;font-size:12px" onclick="loadMenuFoods()">↻</button></h2>
+      <table><thead><tr><th>Mã</th><th>Tên món</th><th>Giá</th><th>Loại</th><th>Trạng thái</th><th>Đặt</th></tr></thead>
+      <tbody id="menu-foods-table"></tbody></table>
+    </div>
+  </div>
+
+  <div id="s-cart" class="section">
+    <div class="card"><h2>Thêm Món Vào Giỏ</h2>
+      <div class="form-row">
+        <input id="sc-foodid" placeholder="Mã món (VD: F001)"/>
+        <input id="sc-qty" type="number" value="1" min="1" style="max-width:100px"/>
+        <button class="btn green" onclick="studentAddToCart()">+ Thêm vào giỏ</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Giỏ Hàng Của Tôi
+        <button class="btn blue" style="float:right;font-size:12px" onclick="loadMyCart()">↻</button>
+        <button class="btn" style="float:right;font-size:12px;margin-right:6px;background:#aaa" onclick="clearMyCart()">🗑 Xóa giỏ</button>
+      </h2>
+      <table><thead><tr><th>Tên món</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+      <tbody id="my-cart-table"></tbody></table>
+      <div id="my-cart-total" style="text-align:right;margin-top:10px;font-weight:bold;color:#e74c3c;font-size:15px"></div>
+      <div style="text-align:right;margin-top:12px">
+        <button class="btn green" style="font-size:14px;padding:10px 28px" onclick="placeOrder()">📋 Lên đơn hàng</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="s-account" class="section">
+    <div class="card" id="account-info-card"><h2>Thông Tin Tài Khoản</h2></div>
+    <div class="card"><h2>Cập Nhật Số Dư</h2>
+      <div class="form-row">
+        <input id="new-balance" type="number" placeholder="Nhập số dư mới (VND)"/>
+        <button class="btn green" onclick="updateMyBalance()">Cập nhật</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="s-orders" class="section">
+    <!-- Thanh toán -->
+    <div class="card" id="payment-card" style="display:none">
+      <h2>💳 Thanh Toán Đơn Hàng</h2>
+      <div id="payment-order-info" style="margin-bottom:14px;padding:12px;background:#fef9f9;border-radius:6px;font-size:13px"></div>
+      <div style="margin-bottom:12px;font-weight:bold;font-size:13px;color:#555">Chọn hình thức thanh toán:</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn green" onclick="doCheckout('WALLET')">💰 Thanh toán bằng số dư tài khoản</button>
+        <button class="btn orange" onclick="doCheckout('COD')">🛵 Thanh toán sau khi nhận hàng</button>
+        <button class="btn blue" onclick="doCheckout('BANK')">🏦 Chuyển khoản ngân hàng</button>
+      </div>
+      <button class="btn" style="background:#aaa;font-size:12px" onclick="hidePayment()">Hủy</button>
+    </div>
+
+    <!-- Đơn chờ giao -->
+    <div class="card">
+      <h2>🕐 Đơn Hàng Đang Chờ Giao
+        <button class="btn blue" style="float:right;font-size:12px" onclick="loadMyOrders()">↻</button>
+      </h2>
+      <table><thead><tr><th>Mã đơn</th><th>Thời gian</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thanh toán</th></tr></thead>
+      <tbody id="pending-orders-table"></tbody></table>
+      <div id="pending-empty" style="text-align:center;color:#aaa;padding:16px;display:none">Không có đơn hàng đang chờ</div>
+    </div>
+
+    <!-- Lịch sử -->
+    <div class="card">
+      <h2>📜 Lịch Sử Đơn Hàng</h2>
+      <table><thead><tr><th>Mã đơn</th><th>Thời gian</th><th>Tổng tiền</th><th>Hình thức</th><th>Trạng thái</th></tr></thead>
+      <tbody id="history-orders-table"></tbody></table>
+      <div id="history-empty" style="text-align:center;color:#aaa;padding:16px;display:none">Chưa có đơn hàng nào</div>
+    </div>
+  </div>`;
+}
+
+// ===== THỰC ĐƠN =====
+async function loadMenuFoods(){
+  const data=await(await fetch(BASE+'/foods')).json();
+  document.getElementById('menu-foods-table').innerHTML=data.map(f=>`
+    <tr>
+      <td>${f.foodId}</td><td>${f.name}</td><td>${fmt(f.price)}</td><td>${f.category}</td>
+      <td><span class="badge ${f.available?'green':'red'}">${f.available?'Còn hàng':'Hết hàng'}</span></td>
+      <td>${f.available?`<button class="btn green" style="padding:3px 10px;font-size:12px" onclick="quickAdd('${f.foodId}')">+ Đặt</button>`:'—'}</td>
+    </tr>`).join('');
+}
+function quickAdd(foodId){
+  document.getElementById('sc-foodid').value=foodId;
+  showTab('s-cart',document.querySelectorAll('#main-nav button')[1]);
+}
+
+// ===== GIỎ HÀNG =====
+async function loadMyCart(){
+  const data=await(await fetch(BASE+'/carts/'+currentUser.id)).json();
+  const items=data.items||[];
+  document.getElementById('my-cart-table').innerHTML=items.length
+    ? items.map(i=>`<tr><td>${i.food.name}</td><td>${fmt(i.food.price)}</td><td>${i.quantity}</td><td>${fmt(i.subtotal)}</td></tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:#aaa">Giỏ hàng đang trống</td></tr>';
+  const total=items.reduce((s,i)=>s+i.subtotal,0);
+  document.getElementById('my-cart-total').textContent=items.length?'Tổng: '+fmt(total):'';
+}
+async function studentAddToCart(){
+  const foodId=v('sc-foodid');const qty=parseInt(v('sc-qty'))||1;
+  if(!foodId){toast('Nhập mã món!',true);return;}
+  const res=await post(BASE+'/carts/'+currentUser.id+'/add',{foodId,quantity:qty});
+  const data=await res.json();
+  if(res.ok){toast('Đã thêm vào giỏ!');loadMyCart();}else toast(data.error||'Lỗi!',true);
+}
+async function clearMyCart(){
+  if(!confirm('Xóa toàn bộ giỏ hàng?'))return;
+  await fetch(BASE+'/carts/'+currentUser.id+'/clear',{method:'DELETE'});
+  toast('Đã xóa giỏ!');loadMyCart();
+}
+
+// Lên đơn: tạo đơn trạng thái PENDING, chưa thanh toán
+async function placeOrder(){
+  // Kiểm tra giỏ có hàng không
+  const cartData=await(await fetch(BASE+'/carts/'+currentUser.id)).json();
+  if(!cartData.items||cartData.items.length===0){
+    toast('Giỏ hàng đang trống! Hãy thêm món trước.', true);
+    return;
+  }
+  // Tạo đơn với COD (thanh toán sau) — sinh viên sẽ chọn thanh toán ở tab Đơn hàng
+  const res=await post(BASE+'/checkout/'+currentUser.id,{paymentMethod:'COD'});
+  const data=await res.json();
+  if(res.ok){
+    toast('Đã lên đơn thành công! Mã đơn: '+data.orderId);
+    loadMyCart();
+    // Chuyển sang tab đơn hàng
+    showTab('s-orders',document.querySelectorAll('#main-nav button')[3]);
+  } else {
+    toast((typeof data==='string'?data:data.error)||'Lỗi!',true);
+  }
+}
+
+// ===== ĐƠN HÀNG =====
+let selectedOrderId=null, selectedOrderTotal=0;
+
+async function loadMyOrders(){
+  const data=await(await fetch(BASE+'/orders?studentId='+currentUser.id)).json();
+  // Sắp xếp từ cũ nhất lên trên
+  data.sort((a,b)=>a.orderTime<b.orderTime?-1:1);
+
+  const pending=data.filter(o=>o.status==='PENDING');
+  const history=data.filter(o=>o.status!=='PENDING');
+
+  // Đơn chờ giao
+  const pendingTbl=document.getElementById('pending-orders-table');
+  const pendingEmpty=document.getElementById('pending-empty');
+  if(pending.length){
+    pendingEmpty.style.display='none';
+    pendingTbl.innerHTML=pending.map(o=>`
+      <tr>
+        <td>${o.orderId}</td>
+        <td style="font-size:11px">${o.orderTime}</td>
+        <td>${fmt(o.totalAmount)}</td>
+        <td><span class="badge yellow">Chờ giao</span></td>
+        <td><button class="btn green" style="padding:4px 12px;font-size:12px"
+            onclick="showPayment('${o.orderId}',${o.totalAmount})">Thanh toán</button></td>
+      </tr>`).join('');
+  } else {
+    pendingTbl.innerHTML='';
+    pendingEmpty.style.display='block';
+  }
+
+  // Lịch sử
+  const histTbl=document.getElementById('history-orders-table');
+  const histEmpty=document.getElementById('history-empty');
+  if(history.length){
+    histEmpty.style.display='none';
+    histTbl.innerHTML=history.map(o=>`
+      <tr>
+        <td>${o.orderId}</td>
+        <td style="font-size:11px">${o.orderTime}</td>
+        <td>${fmt(o.totalAmount)}</td>
+        <td>${o.paymentMethod||'—'}</td>
+        <td><span class="badge ${o.status==='PAID'?'green':'red'}">${o.status==='PAID'?'Đã thanh toán':'Đã hủy'}</span></td>
+      </tr>`).join('');
+  } else {
+    histTbl.innerHTML='';
+    histEmpty.style.display='block';
+  }
+}
+
+function showPayment(orderId, total){
+  selectedOrderId=orderId; selectedOrderTotal=total;
+  document.getElementById('payment-order-info').innerHTML=
+    `<b>Mã đơn:</b> ${orderId} &nbsp;|&nbsp; <b>Tổng tiền:</b> <span style="color:#e74c3c">${fmt(total)}</span><br>
+     <small style="color:#888">Số dư hiện tại: ${fmt(currentUser.accountBalance||0)}</small>`;
+  document.getElementById('payment-card').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function hidePayment(){
+  document.getElementById('payment-card').style.display='none';
+  selectedOrderId=null;
+}
+
+async function doCheckout(method){
+  if(!selectedOrderId){toast('Chưa chọn đơn hàng!',true);return;}
+  // Với đơn đã PENDING, cần gọi API thanh toán riêng
+  // Vì đơn đã tạo sẵn, ta gọi endpoint thanh toán với orderId
+  const res=await post(BASE+'/checkout/pay',{orderId:selectedOrderId, paymentMethod:method, studentId:currentUser.id});
+  const data=await res.json();
+  if(res.ok){
+    toast('Thanh toán thành công!');
+    if(method==='WALLET') currentUser.accountBalance=(currentUser.accountBalance||0)-selectedOrderTotal;
+    hidePayment();
+    loadMyOrders();
+  } else {
+    toast((typeof data==='string'?data:data.error)||'Thanh toán thất bại!',true);
+  }
+}
+
+function renderAccountInfo(){
+  const u=currentUser;
+  document.getElementById('account-info-card').innerHTML=`
+    <h2>Thông Tin Tài Khoản</h2>
+    <table>
+      <tr><td><b>Mã SV</b></td><td>${u.id}</td></tr>
+      <tr><td><b>Họ tên</b></td><td>${u.fullName}</td></tr>
+      <tr><td><b>SĐT</b></td><td>${u.phone}</td></tr>
+      <tr><td><b>Phòng</b></td><td>${u.roomAddress||'—'}</td></tr>
+      <tr><td><b>Số dư</b></td><td style="color:#e74c3c;font-weight:bold">${fmt(u.accountBalance||0)}</td></tr>
+    </table>`;
+}
+async function updateMyBalance(){
+  const bal=parseFloat(v('new-balance'));
+  if(isNaN(bal)||bal<0){toast('Số dư không hợp lệ!',true);return;}
+  const body={fullName:currentUser.fullName,phoneNumber:currentUser.phone,
+    roomAddress:currentUser.roomAddress,accountBalance:bal};
+  const res=await fetch(BASE+'/students/'+currentUser.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){currentUser.accountBalance=bal;toast('Đã cập nhật số dư!');renderAccountInfo();}
+  else toast('Lỗi cập nhật!',true);
+}
+
+// ===== UTILS =====
+function v(id){return document.getElementById(id)?.value?.trim()||'';}
+function fmt(n){return Number(n).toLocaleString('vi-VN')+' VND';}
+async function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+function toast(msg,isError=false){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className=isError?'error':'';t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+</script>
+</body></html>

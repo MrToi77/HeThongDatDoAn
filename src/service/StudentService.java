@@ -1,6 +1,7 @@
 package service;
 
 import model.Student;
+import org.springframework.stereotype.Service;
 import repository.StudentRepository;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Service xử lý logic liên quan đến sinh viên.
  */
+@Service
 public class StudentService {
 
     private final StudentRepository studentRepository;
@@ -44,6 +46,26 @@ public class StudentService {
         }
         studentRepository.save(student);
         System.out.println("Đăng ký sinh viên thành công: " + student.getFullName());
+    }
+
+    /**
+     * Cập nhật thông tin sinh viên.
+     */
+    public void updateStudent(Student student) {
+        if (studentRepository.findById(student.getId()) == null) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên: " + student.getId());
+        }
+        studentRepository.save(student);
+    }
+
+    /**
+     * Xóa sinh viên theo mã.
+     */
+    public void deleteStudent(String studentId) {
+        if (studentRepository.findById(studentId) == null) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên: " + studentId);
+        }
+        studentRepository.deleteById(studentId);
     }
 
     /**

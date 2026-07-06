@@ -2,11 +2,13 @@ package service;
 
 import model.Order;
 import model.Student;
+import org.springframework.stereotype.Component;
 
 /**
  * Thanh toán bằng chuyển khoản ngân hàng.
  * Hiển thị thông tin tài khoản và xác nhận chuyển khoản.
  */
+@Component
 public class BankTransferPayment implements PaymentMethod {
 
     // Thông tin tài khoản ngân hàng nhận chuyển khoản (có thể cấu hình)
